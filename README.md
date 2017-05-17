@@ -33,5 +33,7 @@ Tabs, spaces, and newlines are ignored; as a result, you can design your code in
 Examples
 ----
 
+helloworld.int: Prints "hello, world".
+
 numiter.int: Prints numbers 0-9 forwards and backwards endlessly. If you are not seeing any output from this program, press ctrl-C or run the program from the Python IDLE.
 
