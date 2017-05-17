@@ -218,7 +218,7 @@ def metaparse(inputstring, operators):
 
     remainder = ""
     
-    if not inputstring: #Returns 0 if the string is empty.
+     if not inputstring: #Returns 0 if the string is empty.
         return 0, remainder
     
     integer = 0
@@ -228,10 +228,11 @@ def metaparse(inputstring, operators):
         return integer, remainder
     except ValueError:
         pass
-
+,
     output = parse(inputstring, list(operators.keys())) #Get and unpack parse output
     op = output[0]
-    arguments = output[1]
+
+arguments = output[1]
     remainder = output[2]
 
     function = operators[op] #The function to be executed from the operator
@@ -259,6 +260,25 @@ def metaparse(inputstring, operators):
         out = metaparse(remainder, operators)
     return out, remainder
 
+def nocomments(input):
+    """nocomments removes comments, which are of the form #.<comment_text>.# and which do not nest.
+       You don't have to put a comment end signifier if you want the last bit of the program to be a comment."""
+    incomment = False
+    lastchar = None
+    output = ""
+    for i in input: #Basically, just add characters to the output if they aren't in comments in the input.
+        if i == "." and lastchar == "#" and incomment == False:
+            incomment = True
+        if i == "#" and lastchar == "." and incomment == True:
+            incomment = False
+                    
+        if not incomment:
+          output += i
+
+        lastchar = i
+    
+    return output
+
 #The main body of the interpreter--almost like a metametaparse function
 
 string = "" #The actual program is stored here
@@ -276,4 +296,4 @@ while True: #collecting input
     except EOFError:
         break
 
-metaparse(string, opdict)
+metaparse(nocomments(string), opdict)
