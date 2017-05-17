@@ -29,6 +29,8 @@ The loop operator is of the form \~xy. While x is 0, y will be evaluated. For in
 
 Tabs, spaces, and newlines are ignored; as a result, you can design your code in almost any shape.
 
+Comments are of the form #.x.#, where x can be basically anything. Comments don't nest; however, if the last part of your program is a comment, you can safely leave off the end of the comment so that it becomes #.x; however, you cannot write x.# at the beginning of a program. Comments are removed before parsing.
+
 ----
 Examples
 ----
