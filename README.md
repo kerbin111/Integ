@@ -28,3 +28,10 @@ z will be evaluated. For instance, ? (-(\[())(97)) (](97)) () prints "a" if it r
 The loop operator is of the form \~xy. While x is 0, y will be evaluated. For instance, }()()\~(0)(](}()(+({())(1)))](32)) will print the characters (or try to print the characters) with codes 0, 1, 2, 3, 4, 5... and so forth for infinity, or until the application is exited.
 
 Tabs, spaces, and newlines are ignored; as a result, you can design your code in almost any shape.
+
+----
+Examples
+----
+
+numiter.int: Prints numbers 0-9 forwards and backwards endlessly. If you are not seeing any output from this program, press ctrl-C or run the program from the Python IDLE.
+
