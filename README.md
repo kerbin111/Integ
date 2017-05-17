@@ -37,3 +37,4 @@ helloworld.int: Prints "hello, world".
 
 numiter.int: Prints numbers 0-9 forwards and backwards endlessly. If you are not seeing any output from this program, press ctrl-C or run the program from the Python IDLE.
 
+say_a.int: Wants you to press "a" over and over and over. This program does not work in the Python IDLE; try a command prompt instead.
