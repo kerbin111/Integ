@@ -1,5 +1,4 @@
-"""2017 Joshua Fitzgerald
-
+"""
 This program is the reference implementation of the Integ language for Windows. To port the program,
 I suspect that you simply need to change inputer and the msvcrt import.
 
