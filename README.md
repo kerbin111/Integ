@@ -20,7 +20,7 @@ Decimal integer constants exist in Integ.
 Things can be added and subtracted with + and -, and multiplied and divided with * and /. For instance, +(2)(3) is 5; -(2)(3) is -1; \*(2)(3) is 6; /(2)(3) is 0, as division is rounded down to the nearest integer. The interpreter catches division by zero errors.
 
 To print characters, use ]x. This operator prints the character equivalent to x. For example, ](97) prints "a".
-To input a character from the standard input and receive its character code, use [x. x is a dummy argument. Also, note that invalid codes will simply be ignored.
+To input a character from the standard input and receive its character code, use [x, where x is a dummy argument. Note that invalid codes will simply be ignored. [ does not work in IDLE; use a command line interface instead.
 
 The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; otherwise,
 z will be evaluated. For instance, ? (-(\[())(97)) (](97)) () prints "a" if it receives "a", and does not print anything if it receives another character.
