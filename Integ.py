@@ -1,4 +1,5 @@
-"""
+"""2017 Joshua Fitzgerald
+
 This program is the reference implementation of the Integ language for Windows. To port the program,
 I suspect that you simply need to change inputer and the msvcrt import.
 
@@ -115,11 +116,11 @@ def divide(arguments):
 
 def conditional(arguments):
     """conditional is a dummy function for ?. metaparse handles conditional execution."""
-    pass
+    return arguments[0]
 
 def loop(arguments):
     """conditional is a dummy function for ~. metaparse handles loop execution."""
-    pass
+    return arguments[0]
 
 def parse(inputstr, opconst):
     """Parses an input string according to the operator character list opconst
@@ -235,16 +236,18 @@ def metaparse(inputstring, operators):
     parsedvals = [] #parsing the arguments
 
     if op == "???": #metaparse directly works with the conditional operator
-        if not metaparse(arguments[0], operators)[0]:
-            out = metaparse(arguments[1], operators)
+        
+        if metaparse(arguments[0], operators)[0] == 0:
+            parsedvals.append(metaparse(arguments[1], operators)[0])
+            
         else:
-            out = metaparse(arguments[2], operators)
+            parsedvals.append(metaparse(arguments[2], operators)[0])
         
     elif op == "~~": #metaparse works directly with the loop operator
-        metaval = 0
-        while not metaparse(arguments[0], operators)[0]:
-            out = metaparse(arguments[1], operators)
-
+        
+        while metaparse(arguments[0], operators)[0] == 0:
+            parsedvals.append(metaparse(arguments[1], operators)[0])
+    
     else: #everything else ultimately goes through functions
         for i in arguments:
             parsedvals.append(metaparse(i, operators)[0])
