@@ -1,6 +1,8 @@
 # Integ
 
-Here's a long, disorganized explanation of Integ.
+---NOTE---
+Because the underlying Python library used for input is Windows-only, the current version of the Integ interpreter is Windows-only. However, porting the interpreter to Linux or another OS should not be difficult; just change the stuff that works with the [ operator.
+----------
 
 Integ is an esoteric programming language in which the only datatype is the integer and the only storage is one large, variable-length array of integers which is accessed through non-negative addresses, beginning at 0. In Integ, variables do not get distinct names. Instead, they are accessed with the notation {x and written to with the notation }xy where x is the address number and y is the new integer. y is optional; the program will write 0 to x if y is simply a set of empty parentheses (see below).
 
@@ -20,7 +22,7 @@ Decimal integer constants exist in Integ.
 Things can be added and subtracted with + and -, and multiplied and divided with * and /. For instance, +(2)(3) is 5; -(2)(3) is -1; \*(2)(3) is 6; /(2)(3) is 0, as division is rounded down to the nearest integer. The interpreter catches division by zero errors.
 
 To print characters, use ]x. This operator prints the character equivalent to x. For example, ](97) prints "a".
-To input a character from the standard input and receive its character code, use [x. x is a dummy argument. Note that [x does not wait for a newline, and that its implementation may be platform dependent. Also, note that invalid codes will simply be ignored.
+To input a character from the standard input and receive its character code, use [x. x is a dummy argument. Also, note that invalid codes will simply be ignored.
 
 The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; otherwise,
 z will be evaluated. For instance, ? (-(\[())(97)) (](97)) () prints "a" if it receives "a", and does not print anything if it receives another character.
