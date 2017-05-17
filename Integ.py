@@ -116,11 +116,13 @@ def divide(arguments):
 
 def conditional(arguments):
     """conditional is a dummy function for ?. metaparse handles conditional execution."""
-    return arguments[0]
+    if arguments:
+        return arguments[0]
 
 def loop(arguments):
     """conditional is a dummy function for ~. metaparse handles loop execution."""
-    return arguments[0]
+    if arguments:
+        return arguments[0]
 
 def parse(inputstr, opconst):
     """Parses an input string according to the operator character list opconst
