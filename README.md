@@ -24,6 +24,6 @@ To input a character from the standard input and receive its character code, use
 The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; otherwise,
 z will be evaluated. For instance, ? (-(\[())(97)) (](97)) () prints "a" if it receives "a", and does not print anything if it receives another character.
 
-The loop operator is of the form ~xy. While x is 0, y will be evaluated. For instance, }()()~(0)(](}()(+({())(1)))](32)) will print the characters (or try to print the characters) with codes 0, 1, 2, 3, 4, 5... and so forth for infinity, or until the application is exited.
+The loop operator is of the form \~xy. While x is 0, y will be evaluated. For instance, }()()\~(0)(](}()(+({())(1)))](32)) will print the characters (or try to print the characters) with codes 0, 1, 2, 3, 4, 5... and so forth for infinity, or until the application is exited.
 
 Tabs, spaces, and newlines are ignored; as a result, you can design your code in almost any shape.
