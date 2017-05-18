@@ -23,10 +23,10 @@ nearest address. For instance, a program evaluating }(5)(7) will not just set as
 is 3, set aside storage for 4 and set it equal to 0.
 
 To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
-as an operator, but as a syntax feature (or something; I don't know).
+as an operator, but as a syntax feature.
 
 Note that addresses cannot be read from unless they have been declared. The @ operator, which is of the form @(x) where x is a dummy argument, provides the maximum
-assigned address to help with storage allocation.
+assigned address to help with storage allocation. If no storage has been allocated, @ outputs -1.
 Also note that address numbers must be greater than or equal to 0.
 
 Integer constants exist in Integ.
