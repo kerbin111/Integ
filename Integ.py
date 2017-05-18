@@ -109,7 +109,7 @@ def multiply(arguments):
     return int(arguments[0] * arguments[1])
 
 def divide(arguments):
-    """The function that corresponds to the - operator. Takes a list; returns the quotient the first and second operands."""
+    """The function that corresponds to the / operator. Takes a list; returns the quotient the first and second operands."""
     if not arguments[1]:
         sys.exit("Cannot divide by zero.\n")
     return int(arguments[0] / arguments[1])
