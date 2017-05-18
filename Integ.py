@@ -25,7 +25,8 @@ is 3, set aside storage for 4 and set it equal to 0.
 To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
 as an operator, but as a syntax feature (or something; I don't know).
 
-Note that addresses cannot be read from unless they have been declared.
+Note that addresses cannot be read from unless they have been declared. The @ operator, which is of the form @(x) where x is a dummy argument, provides the maximum
+assigned address to help with storage allocation.
 Also note that address numbers must be greater than or equal to 0.
 
 Integer constants exist in Integ.
@@ -43,7 +44,12 @@ z will be evaluated.
 The loop operator is of the form ~xy. While x is 0, y will be evaluated.
 
 All operators must have one constitutent character, with the operands following in parentheses.
-The character used must be distinct from all other operators' characters."""
+The character used must be distinct from all other operators' characters.
+
+Comments are of the form #.x.#, where x can be basically anything. Comments don't nest; however, if the last part of your program is a comment, you can safely leave
+off the end of the comment so that it becomes #.x; however, you cannot do x.# at the beginning of a program. Comments are removed before parsing.
+
+"""
 
 import sys
 import msvcrt #Change if you are on a non-Windows OS
@@ -77,6 +83,10 @@ def read(arguments):
         sys.exit("Invalid address " + str(address) + ".\n")
     
     return numarray[address]
+
+def maxa(arguments):
+    """The function that corresponds to the @ operator. Takes a dummy list; returns the maximum assigned storage address."""
+    return len(numarray) - 1
 
 def printer(arguments):
     """The function that corresponds to the ] operator. Takes a list; returns its contents."""
@@ -218,7 +228,7 @@ def metaparse(inputstring, operators):
 
     remainder = ""
     
-     if not inputstring: #Returns 0 if the string is empty.
+    if not inputstring: #Returns 0 if the string is empty.
         return 0, remainder
     
     integer = 0
@@ -228,11 +238,10 @@ def metaparse(inputstring, operators):
         return integer, remainder
     except ValueError:
         pass
-,
+
     output = parse(inputstring, list(operators.keys())) #Get and unpack parse output
     op = output[0]
-
-arguments = output[1]
+    arguments = output[1]
     remainder = output[2]
 
     function = operators[op] #The function to be executed from the operator
@@ -272,7 +281,7 @@ def nocomments(input):
         if i == "#" and lastchar == "." and incomment == True:
             incomment = False
                     
-        if not incomment:
+        if not incomment and i != "#" and i != ".":
           output += i
 
         lastchar = i
@@ -282,7 +291,7 @@ def nocomments(input):
 #The main body of the interpreter--almost like a metametaparse function
 
 string = "" #The actual program is stored here
-opdict = {"}}" : write, "{" : read, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
+opdict = {"}}" : write, "{" : read, "@" : maxa, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
           "**" : multiply, "//" : divide, "???" : conditional, "~~" : loop}
                                              #These are the operators currently supported by Integ. The number
                                              #of times that the character is repeated is the number of operands
