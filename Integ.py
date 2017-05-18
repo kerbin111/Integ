@@ -23,7 +23,7 @@ nearest address. For instance, a program evaluating }(5)(7) will not just set as
 is 3, set aside storage for 4 and set it equal to 0.
 
 To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
-as an operator, but as a syntax feature.
+as an operator, but as a syntax feature (or something; I don't know).
 
 Note that addresses cannot be read from unless they have been declared. The @ operator, which is of the form @(x) where x is a dummy argument, provides the maximum
 assigned address to help with storage allocation. If no storage has been allocated, @ outputs -1.
@@ -31,7 +31,7 @@ Also note that address numbers must be greater than or equal to 0.
 
 Integer constants exist in Integ.
 
-Things can be added and subtracted with + and -, and multiplied and divided with * and /.
+Things can be added and subtracted with + and -, and multiplied and divided with * and /. The modulus operator is %.
 
 To print characters, use ]x. This operator prints a numeric code equal to the value of its contents.
 To input a character code from the standard input, use [x. Note that [x does not wait for a newline,
@@ -119,10 +119,16 @@ def multiply(arguments):
     return int(arguments[0] * arguments[1])
 
 def divide(arguments):
-    """The function that corresponds to the - operator. Takes a list; returns the quotient the first and second operands."""
+    """The function that corresponds to the / operator. Takes a list; returns the quotient the first and second operands."""
     if not arguments[1]:
         sys.exit("Cannot divide by zero.\n")
     return int(arguments[0] / arguments[1])
+
+def modulus(arguments):
+    """The function that corresponds to the % operator. Takes a list; returns the remainder of the quotient of the first and second operands."""
+    if not arguments[1]:
+        sys.exit("Cannot divide by zero.\n")
+    return int(arguments[0] % arguments[1])
 
 def conditional(arguments):
     """conditional is a dummy function for ?. metaparse handles conditional execution."""
@@ -292,7 +298,7 @@ def nocomments(input):
 
 string = "" #The actual program is stored here
 opdict = {"}}" : write, "{" : read, "@" : maxa, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
-          "**" : multiply, "//" : divide, "???" : conditional, "~~" : loop}
+          "**" : multiply, "//" : divide, "%%" : modulus, "???" : conditional, "~~" : loop}
                                              #These are the operators currently supported by Integ. The number
                                              #of times that the character is repeated is the number of operands
                                              #that the operator requires. Each operator (except for the conditional and loop operators)
