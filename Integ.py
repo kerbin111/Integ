@@ -218,7 +218,7 @@ def metaparse(inputstring, operators):
 
     remainder = ""
     
-     if not inputstring: #Returns 0 if the string is empty.
+    if not inputstring: #Returns 0 if the string is empty.
         return 0, remainder
     
     integer = 0
@@ -228,11 +228,11 @@ def metaparse(inputstring, operators):
         return integer, remainder
     except ValueError:
         pass
-,
+
     output = parse(inputstring, list(operators.keys())) #Get and unpack parse output
     op = output[0]
 
-arguments = output[1]
+    arguments = output[1]
     remainder = output[2]
 
     function = operators[op] #The function to be executed from the operator
