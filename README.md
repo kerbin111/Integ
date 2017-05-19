@@ -1,7 +1,7 @@
 # Integ
 
-Note: You need Python 3 and Microsoft Windows to run the Integ interpreter.
-  
+Note: You need Python 3 to run the Integ interpreter.
+
 Integ is an esoteric programming language in which the only datatype is the integer and the only storage is one large, variable-length array of integers which is accessed through non-negative addresses, beginning at 0. In Integ, variables do not get distinct names. Instead, they are accessed with the notation {x and written to with the notation }xy where x is the address number and y is the new integer. y is optional; the program will write 0 to x if y is simply a set of empty parentheses (see below).
 
 Variables are declared in two ways; the variable is always initialized at the same time.

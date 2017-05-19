@@ -1,7 +1,6 @@
-"""2017 Joshua Fitzgerald
+"""2017. By Joshua Fitzgerald; Unix/MacOS capability by Jimmy Thrasher.
 
-This program is the reference implementation of the Integ language for Windows. To port the program,
-I suspect that you simply need to change inputer and the msvcrt import.
+This program is the reference implementation of the Integ language.
 
 In Integ, the only datatype is the integer. The variables have consecutive addresses in Integ (they may or may not be consecutive in memory) and do not get distinct names. Instead,
 they are accessed with the notation {x and written to with the notation }xy where x is the address number and y is the new integer. y is optional;
@@ -52,7 +51,46 @@ off the end of the comment so that it becomes #.x; however, you cannot do x.# at
 """
 
 import sys
-import msvcrt #Change if you are on a non-Windows OS
+
+# from http://code.activestate.com/recipes/134892/
+class _Getch:
+    """Gets a single character from standard input.  Does not echo to the
+screen."""
+    def __init__(self):
+        try:
+            self.impl = _GetchWindows()
+        except ImportError:
+            self.impl = _GetchUnix()
+
+    def __call__(self): return self.impl()
+
+
+class _GetchUnix:
+    def __init__(self):
+        import tty, sys
+
+    def __call__(self):
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+
+class _GetchWindows:
+    def __init__(self):
+        import msvcrt
+
+    def __call__(self):
+        import msvcrt
+        return msvcrt.getche()
+
+
+getch = _Getch()
 
 global numarray #This is the big array that everything reads from.
 numarray = [] #Nothing stored in it yet.
@@ -104,7 +142,7 @@ def inputer(arguments):
     """The function that corresponds to the [ operator.
        Takes a dummy list; returns a character code where the character is from the standard input."""
 
-    return ord(msvcrt.getche())
+    return ord(getch())
 
 def add(arguments):
     """The function that corresponds to the + operator. Takes a list; returns the sum of its operands."""
@@ -191,8 +229,7 @@ def parse(inputstr, opconst):
             
             if lparen > rparen and (i != ")" or lparen - 1 != rparen):
                 #Only add the character if the parentheses are still unbalanced. Do not add parentheses
-                #that balance the parentheses
-                temparg += i
+                #that balance the parentheses                temparg += i
 
             if lparen == rparen and lparen: #If the parentheses are balanced and exist:
                 break
