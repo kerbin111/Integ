@@ -24,12 +24,13 @@ is 3, set aside storage for 4 and set it equal to 0.
 To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
 as an operator, but as a syntax feature (or something; I don't know).
 
-Note that addresses cannot be read from unless they have been declared.
+Note that addresses cannot be read from unless they have been declared. The @ operator, which is of the form @(x) where x is a dummy argument, provides the maximum
+assigned address to help with storage allocation. If no storage has been allocated, @ outputs -1.
 Also note that address numbers must be greater than or equal to 0.
 
 Integer constants exist in Integ.
 
-Things can be added and subtracted with + and -, and multiplied and divided with * and /.
+Things can be added and subtracted with + and -, and multiplied and divided with * and /. The modulus operator is %.
 
 To print characters, use ]x. This operator prints a numeric code equal to the value of its contents.
 To input a character code from the standard input, use [x. Note that [x does not wait for a newline,
@@ -42,7 +43,12 @@ z will be evaluated.
 The loop operator is of the form ~xy. While x is 0, y will be evaluated.
 
 All operators must have one constitutent character, with the operands following in parentheses.
-The character used must be distinct from all other operators' characters."""
+The character used must be distinct from all other operators' characters.
+
+Comments are of the form #.x.#, where x can be basically anything. Comments don't nest; however, if the last part of your program is a comment, you can safely leave
+off the end of the comment so that it becomes #.x; however, you cannot do x.# at the beginning of a program. Comments are removed before parsing.
+
+"""
 
 import sys
 
@@ -116,6 +122,10 @@ def read(arguments):
     
     return numarray[address]
 
+def maxa(arguments):
+    """The function that corresponds to the @ operator. Takes a dummy list; returns the maximum assigned storage address."""
+    return len(numarray) - 1
+
 def printer(arguments):
     """The function that corresponds to the ] operator. Takes a list; returns its contents."""
     try:
@@ -151,6 +161,12 @@ def divide(arguments):
     if not arguments[1]:
         sys.exit("Cannot divide by zero.\n")
     return int(arguments[0] / arguments[1])
+
+def modulus(arguments):
+    """The function that corresponds to the % operator. Takes a list; returns the remainder of the quotient of the first and second operands."""
+    if not arguments[1]:
+        sys.exit("Cannot divide by zero.\n")
+    return int(arguments[0] % arguments[1])
 
 def conditional(arguments):
     """conditional is a dummy function for ?. metaparse handles conditional execution."""
@@ -213,8 +229,7 @@ def parse(inputstr, opconst):
             
             if lparen > rparen and (i != ")" or lparen - 1 != rparen):
                 #Only add the character if the parentheses are still unbalanced. Do not add parentheses
-                #that balance the parentheses
-                temparg += i
+                #that balance the parentheses                temparg += i
 
             if lparen == rparen and lparen: #If the parentheses are balanced and exist:
                 break
@@ -269,7 +284,6 @@ def metaparse(inputstring, operators):
 
     output = parse(inputstring, list(operators.keys())) #Get and unpack parse output
     op = output[0]
-
     arguments = output[1]
     remainder = output[2]
 
@@ -310,7 +324,7 @@ def nocomments(input):
         if i == "#" and lastchar == "." and incomment == True:
             incomment = False
                     
-        if not incomment:
+        if not incomment and i != "#" and i != ".":
           output += i
 
         lastchar = i
@@ -320,8 +334,8 @@ def nocomments(input):
 #The main body of the interpreter--almost like a metametaparse function
 
 string = "" #The actual program is stored here
-opdict = {"}}" : write, "{" : read, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
-          "**" : multiply, "//" : divide, "???" : conditional, "~~" : loop}
+opdict = {"}}" : write, "{" : read, "@" : maxa, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
+          "**" : multiply, "//" : divide, "%%" : modulus, "???" : conditional, "~~" : loop}
                                              #These are the operators currently supported by Integ. The number
                                              #of times that the character is repeated is the number of operands
                                              #that the operator requires. Each operator (except for the conditional and loop operators)
