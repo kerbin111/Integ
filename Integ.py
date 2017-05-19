@@ -229,7 +229,8 @@ def parse(inputstr, opconst):
             
             if lparen > rparen and (i != ")" or lparen - 1 != rparen):
                 #Only add the character if the parentheses are still unbalanced. Do not add parentheses
-                #that balance the parentheses                temparg += i
+                #that balance the parentheses
+                temparg += i
 
             if lparen == rparen and lparen: #If the parentheses are balanced and exist:
                 break
