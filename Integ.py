@@ -1,7 +1,6 @@
-"""2017 Joshua Fitzgerald
+"""2017. By Joshua Fitzgerald; Unix/MacOS capability by Jimmy Thrasher.
 
-This program is the reference implementation of the Integ language for Windows. To port the program,
-I suspect that you simply need to change inputer and the msvcrt import.
+This program is the reference implementation of the Integ language.
 
 In Integ, the only datatype is the integer. The variables have consecutive addresses in Integ (they may or may not be consecutive in memory) and do not get distinct names. Instead,
 they are accessed with the notation {x and written to with the notation }xy where x is the address number and y is the new integer. y is optional;
@@ -82,7 +81,7 @@ class _GetchWindows:
 
     def __call__(self):
         import msvcrt
-        return msvcrt.getch()
+        return msvcrt.getche()
 
 
 getch = _Getch()
