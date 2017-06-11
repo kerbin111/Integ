@@ -1,6 +1,6 @@
 """2017. By Joshua Fitzgerald; Unix/MacOS capability by Jimmy Thrasher.
 
-This program is the reference implementation of the Integ language.
+This program is the reference implementation of the Integ language, version 1.1.
 
 In Integ, the only datatype is the integer. The variables have consecutive addresses in Integ (they may or may not be consecutive in memory) and do not get distinct names. Instead,
 they are accessed with the notation {x and written to with the notation }xy where x is the address number and y is the new integer. y is optional;
@@ -22,11 +22,14 @@ nearest address. For instance, a program evaluating }(5)(7) will not just set as
 is 3, set aside storage for 4 and set it equal to 0.
 
 To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
-as an operator, but as a syntax feature (or something; I don't know).
+as an operator, but as a syntax feature.
 
 Note that addresses cannot be read from unless they have been declared. The @ operator, which is of the form @(x) where x is a dummy argument, provides the maximum
 assigned address to help with storage allocation. If no storage has been allocated, @ outputs -1.
 Also note that address numbers must be greater than or equal to 0.
+
+To deallocate storage, use _x. _x will deallocate all storage between the maximum allotted storage address and the address x, so be careful using it.
+For example, if 0, 1, and 2 are allocated addresses, _(1) will deallocate 1 and 2, so that the only valid address will become 0.
 
 Integer constants exist in Integ.
 
@@ -36,6 +39,13 @@ To print characters, use ]x. This operator prints a numeric code equal to the va
 To input a character code from the standard input, use [x. Note that [x does not wait for a newline,
 and that its implementation may be platform dependent. As a result, this code may not work perfectly
 on non-Windows platforms.
+
+To output the current time in seconds since the beginning of the epoch, use "x, where x is a dummy argument. The returned time is rounded down.
+
+To obtain a random number between x and y, use `xy, where x and y are the bounds for the random number. x and y do not have to be in any particular order;
+`(0)(10) and `(10)(0) both work. Note that random number generation is intentionally implementation dependent; that way, the implementation determines the level
+of randomness used. Note, then, that the implementation is responsible for providing the actual generator and a seed (if your generator is pseudo-random). This
+reference implementation uses the Python random module, which is pseudo-random, and its default seed generation settings.
 
 The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; otherwise,
 z will be evaluated.
@@ -48,9 +58,10 @@ The character used must be distinct from all other operators' characters.
 Comments are of the form #.x.#, where x can be basically anything. Comments don't nest; however, if the last part of your program is a comment, you can safely leave
 off the end of the comment so that it becomes #.x; however, you cannot do x.# at the beginning of a program. Comments are removed before parsing.
 
+$ can be used within the interactive prompt only to exit. Also note that $ is not an operator, so you can simply write $.
 """
 
-import sys
+import sys, time, random
 
 # from http://code.activestate.com/recipes/134892/
 class _Getch:
@@ -102,14 +113,14 @@ def write(arguments):
     maxpos = len(numarray) - 1 #The maximum position in the array.
 
     if address < 0: #We cannot use negative positions.
-        sys.exit("Cannot assign negative addresses.\n")
+        print("\nCannot assign negative addresses.")
+        sys.exit()
     
     while maxpos < address: #Declaring the storage we need, implicitly and explicitly
         numarray.append(0)
         maxpos += 1
 
     numarray[address] = contents #Actually writing the info
-    
     return contents
 
 def read(arguments):
@@ -118,10 +129,24 @@ def read(arguments):
     maxpos = len(numarray) - 1 #The maximum position in the array.
 
     if address < 0 or address > maxpos: #We cannot use negative positions.
-        sys.exit("Invalid address " + str(address) + ".\n")
-    
+        print("\nInvalid address " + str(address) + ".")
+        sys.exit()
+        
     return numarray[address]
 
+def dealloc(arguments):
+    """The function that corresponds to the _ operator. Takes a list; deallocates all addresses between the maximum address and a specified address and returns the address specified."""
+    address = int(arguments[0])
+    maxpos = len(numarray) - 1 #The maximum position in the array.
+
+    if address < 0 or address > maxpos: #We cannot use negative positions.
+        print("\nInvalid address " + str(address) + ".")
+        sys.exit()
+        
+    del numarray[address : maxpos + 1] #Slicing is weird
+
+    return address
+    
 def maxa(arguments):
     """The function that corresponds to the @ operator. Takes a dummy list; returns the maximum assigned storage address."""
     return len(numarray) - 1
@@ -129,7 +154,10 @@ def maxa(arguments):
 def printer(arguments):
     """The function that corresponds to the ] operator. Takes a list; returns its contents."""
     try:
-        print(chr(int(arguments[0])), end = "")
+        #from https://stackoverflow.com/questions/25368786/python-print-does-not-work-in-loop
+        #fixes glitch in shell with loop printing
+        sys.stdout.write(chr(int(arguments[0])))
+        sys.stdout.flush()
     except UnicodeEncodeError:
         pass #We would just print the standard box character that denotes missing
              #character if the character cannot be printed, but that's missing.
@@ -159,14 +187,27 @@ def multiply(arguments):
 def divide(arguments):
     """The function that corresponds to the / operator. Takes a list; returns the quotient the first and second operands."""
     if not arguments[1]:
-        sys.exit("Cannot divide by zero.\n")
+        print("\nCannot divide by zero.")
+        sys.exit()
     return int(arguments[0] / arguments[1])
 
 def modulus(arguments):
     """The function that corresponds to the % operator. Takes a list; returns the remainder of the quotient of the first and second operands."""
     if not arguments[1]:
-        sys.exit("Cannot divide by zero.\n")
+        print("\nCannot divide by zero.")
+        sys.exit()
     return int(arguments[0] % arguments[1])
+
+def inttime(arguments):
+    """The function that corresponds to the " operator, Takes a list; returns the time in seconds since the start of the epoch, rounded down."""
+    return int(time.time())
+
+def randomint(arguments):
+    """The function that corresponds to the ` operator. Takes a list (namely, the bounds; they do not have to be in order)
+    and returns the random number between the bounds, inclusive."""
+    if arguments[0] > arguments[1]:
+        return random.randint(arguments[1], arguments[0])
+    return random.randint(arguments[0], arguments[1])
 
 def conditional(arguments):
     """conditional is a dummy function for ?. metaparse handles conditional execution."""
@@ -197,8 +238,8 @@ def parse(inputstr, opconst):
     operator = None
 
     if inputstr[0] == ")" or inputstr[0] == "(":
-        sys.exit("Error: Illegal use of ().\n")
-    
+        print("\nError: Illegal use of ().")
+        sys.exit()
     for i in opconst0: #Gets the operator type
         
         if i == inputstr[0]:
@@ -208,9 +249,13 @@ def parse(inputstr, opconst):
         
         j += 1
 
-    if not operator: #We should have found an operator.
-        sys.exit("Operator " + inputstr[0] + " not found.\n")
+    if inputstr[0] == "$":
+        print("\n$ is not an operator; type it by itself in the interactive shell to exit.")
+        sys.exit()
     
+    if not operator: #We should have found an operator.
+        print("\nOperator " + inputstr[0] + " not found.")
+        sys.exit()
     lparen = rparen = tlp = trp = 0 #The first two are reset every argument; the last two stick around 
 
     j = 0
@@ -236,8 +281,8 @@ def parse(inputstr, opconst):
                 break
 
             if not lparen and not rparen and i != "(" and i != ")" and len(args) < len(operator):
-                sys.exit("More operands expected.\n")
-        
+                print("\nMore operands expected.")
+                sys.exit()
             if i == "(":
                 lparen += 1
                 tlp += 1
@@ -257,11 +302,11 @@ def parse(inputstr, opconst):
         j += 1
 
     if len(args) < len(operator):
-        sys.exit("More operands expected.\n")
-    
+        print("\nMore operands expected.")
+        sys.exit()
     if tlp != trp: #If the parentheses were never balanced completely in the string
-        sys.exit("Parentheses not balanced.\n")
-        
+        print("\nParentheses not balanced.")
+        sys.exit()
     return [operator, args, inputstr[pos:]] #We return the operator, its arguments, and anything left in the string.
 
 def metaparse(inputstring, operators):
@@ -335,18 +380,40 @@ def nocomments(input):
 #The main body of the interpreter--almost like a metametaparse function
 
 string = "" #The actual program is stored here
-opdict = {"}}" : write, "{" : read, "@" : maxa, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
-          "**" : multiply, "//" : divide, "%%" : modulus, "???" : conditional, "~~" : loop}
+opdict = {"}}" : write, "{" : read, "_" : dealloc, "@" : maxa, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
+          "**" : multiply, "//" : divide, "%%" : modulus, "\"" : inttime, "``" : randomint, "???" : conditional, "~~" : loop}
                                              #These are the operators currently supported by Integ. The number
                                              #of times that the character is repeated is the number of operands
                                              #that the operator requires. Each operator (except for the conditional and loop operators)
                                              #maps to a function that
                                              #performs its task.
 
-while True: #collecting input
-    try:
-        string += input()
-    except EOFError:
-        break
-
-metaparse(nocomments(string), opdict)
+if (sys.stdin.isatty()):
+    print("""
+--------Integ 1.1---------
+ Interactive  Interpreter""")
+    while True: #interactive interpreter
+        
+        print("\n")
+        string = input(">>> ")
+        if string == "$":
+            break
+        try:
+            metaparse(nocomments(string), opdict)
+        except SystemExit:
+            pass #We don't want to exit when there's an error.
+        except KeyboardInterrupt:
+            print("\nKeyboard Interrupt.")
+            continue
+else:
+    while True: #collecting input for redirection-type input
+        try:
+            string += input()
+        except EOFError:
+            break
+    try:    
+        metaparse(nocomments(string), opdict)
+        
+    except KeyboardInterrupt:
+            print("\nKeyboard Interrupt.")
+            
