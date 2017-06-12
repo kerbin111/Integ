@@ -1,4 +1,4 @@
-# Integ
+# Integ Version 1.1 Interpreter
 
 Note: You need Python 3 to run the Integ interpreter.
 
