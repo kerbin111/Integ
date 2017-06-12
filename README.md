@@ -1,3 +1,4 @@
+
 # Integ
 
 Note: You need Python 3 to run the Integ interpreter.
@@ -46,6 +47,7 @@ Comments are of the form #.x.#, where x can be basically anything. Comments don'
 $ can be used within the interactive prompt only to exit. Also note that $ is not an operator, so you can simply write $.
 
 The current Integ version is 1.1.
+
 ----
 Examples
 ----
