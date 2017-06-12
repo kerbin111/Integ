@@ -24,14 +24,14 @@ For example, if 0, 1, and 2 are allocated addresses, `_(1)` will deallocate 1 an
 
 Decimal integer constants exist in Integ.
 
-Things can be added and subtracted with `+` and `-`, and multiplied and divided with `\*` and `/`. For instance, `+(2)(3)` is 5; `-(2)(3)` is -1; `\*(2)(3)` is 6; `/(2)(3)` is 0, as division is rounded down to the nearest integer. The interpreter catches division by zero errors.
+Things can be added and subtracted with `+` and `-`, and multiplied and divided with `*` and `/`. For instance, `+(2)(3)` is 5; `-(2)(3)` is -1; `*(2)(3)` is 6; `/(2)(3)` is 0, as division is rounded down to the nearest integer. The interpreter catches division by zero errors.
 
 To print characters, use `]x`. This operator prints the character equivalent to `x`. For example, `](97)` prints "a".
 To input a character from the standard input and receive its character code, use `[x`, where `x` is a dummy argument. Note that invalid codes will simply be ignored. `[` does not work in IDLE; use a command line interface instead.
 
 To output the current time in seconds since the beginning of the epoch, use `"x`, where `x` is a dummy argument. The returned time is rounded down.
 
-To obtain a random number between `x` and `y`, use `\`xy`, where `x and `y are the bounds for the random number. `x and `y do not have to be in any particular order;
+To obtain a random number between `x` and `y`, use ` \`xy`, where `x and `y are the bounds for the random number. `x and `y do not have to be in any particular order;
 `\`(0)(10)` and `\`(10)(0)` both work. Note that random number generation is intentionally implementation dependent; that way, the implementation determines the level
 of randomness used. Note, then, that the implementation is responsible for providing the actual generator and a seed (if your generator is pseudo-random). This
 reference implementation uses the Python random module, which is pseudo-random, and its default seed generation settings.
