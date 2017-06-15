@@ -57,4 +57,6 @@ helloworld.int: Prints "hello, world".
 
 numiter.int: Prints numbers 0-9 forwards and backwards endlessly.
 
+quine.int: A quine by wob_jonas from the #esoteric IRC community.
+
 say_a.int: Wants you to press "a" over and over and over. This program does not work in the Python IDLE; try a command prompt instead.
