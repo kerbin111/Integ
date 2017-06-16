@@ -1,10 +1,14 @@
 
 # Integ
 
+Version 1.1
+
+*"So many parentheses everywhere"--wob_jonas*
+
 Note: You need Python 3 to run the Integ interpreter.
 
 Integ is an esoteric programming language in which the only datatype is the integer and the only storage is one large, variable-length array of arbitrary-precision integers which is accessed through non-negative addresses, beginning at 0. In Integ, variables do not get distinct names. Instead, they are accessed with the notation {x and written to with the notation }xy
-where x is the address number and y is the new integer. y is optional; the program will write 0 to x if y is simply a set of empty parentheses (see below).
+where x is the address number and y is the new integer. y is optional; the program will write 0 to x if y is simply a set of empty parentheses (see below). Note that }xy returns x.
 
 Variables are declared in two ways; the variable is always initialized at the same time.
 
@@ -19,14 +23,14 @@ Note that addresses cannot be read from unless they have been declared. The @ op
 assigned address to help with storage allocation. If no storage has been allocated, @ outputs -1.
 Also note that address numbers must be greater than or equal to 0.
 
-To deallocate storage, use _x. _x will deallocate all storage between the maximum allotted storage address and the address x, so be careful using it.
-For example, if 0, 1, and 2 are allocated addresses, _(1) will deallocate 1 and 2, so that the only valid address will become 0.
+To deallocate storage, use _x. _x will deallocate all storage between the maximum allotted storage address and the address x, so be careful using it. _x returns x.
+For example, if 0, 1, and 2 are allocated addresses, _(1) will deallocate 1 and 2, so that the only valid address will become 0. 
 
 Decimal integer constants exist in Integ.
 
 Things can be added and subtracted with + and -, and multiplied and divided with * and /. For instance, +(2)(3) is 5; -(2)(3) is -1; *(2)(3) is 6; /(2)(3) is 0, as division is rounded down to the nearest integer. The interpreter catches division by zero errors.
 
-To print characters, use ]x. This operator prints the character equivalent to x. For example, ](97) prints "a".
+To print characters, use ]x. This operator prints the character equivalent to x. For example, ](97) prints "a". ]x returns x.
 To input a character from the standard input and receive its character code, use [x, where x is a dummy argument. Note that invalid codes will simply be ignored. [ does not work in IDLE; use a command line interface instead.
 
 To output the current time in seconds since the beginning of the epoch, use "x, where x is a dummy argument. The returned time is rounded down.
@@ -46,8 +50,6 @@ Tabs, spaces, and newlines are ignored; as a result, you can design your code in
 Comments are of the form #.x.#, where x can be basically anything. Comments don't nest; however, if the last part of your program is a comment, you can safely leave off the end of the comment so that it becomes #.x; however, you cannot write x.# at the beginning of a program. Comments are removed before parsing.
 
 $ can be used within the interactive prompt only to exit. Also note that $ is not an operator, so you can simply write $.
-
-The current Integ version is 1.1.
 
 ----
 Examples
