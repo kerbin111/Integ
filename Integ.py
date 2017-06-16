@@ -185,18 +185,26 @@ def multiply(arguments):
     return int(arguments[0] * arguments[1])
 
 def divide(arguments):
-    """The function that corresponds to the / operator. Takes a list; returns the quotient the first and second operands."""
+    """Of the form /xy, with x and y in parentheses. Returns, using truncation division, x / y, discarding the remainder."""
+    
     if not arguments[1]:
-        print("\nCannot divide by zero.")
+        c.connection.privmsg(channel, author + ": Cannot divide by zero.")
         sys.exit()
-    return int(arguments[0] / arguments[1])
+    
+    div = abs(arguments[0]) // abs(arguments[1]) #Performs truncation division
 
+    if arguments[0] * arguments[1] >= 0:
+        return int(div)
+    else:
+        return int(div * -1)
+    
 def modulus(arguments):
-    """The function that corresponds to the % operator. Takes a list; returns the remainder of the quotient of the first and second operands."""
+    """Of the form %xy, with x and y in parentheses. Returns, using truncation division, the remainder of x / y."""
+    
     if not arguments[1]:
-        print("\nCannot divide by zero.")
+        c.connection.privmsg(channel, author + ": Cannot divide by zero.")
         sys.exit()
-    return int(arguments[0] % arguments[1])
+    return  arguments[0] - arguments[1] * divide([arguments[0], arguments[1]]) #(Thanks to wob_jonas)
 
 def inttime(arguments):
     """The function that corresponds to the " operator, Takes a list; returns the time in seconds since the start of the epoch, rounded down."""
