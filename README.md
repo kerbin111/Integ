@@ -3,7 +3,8 @@
 
 ### Version 1.1
 
-*"So many parentheses everywhere"--wob_jonas*
+*"So many parentheses everywhere"
+            -wob_jonas*
 
 Note: You need Python 3 to run the Integ interpreter.
 
