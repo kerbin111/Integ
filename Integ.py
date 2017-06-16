@@ -355,7 +355,7 @@ def metaparse(inputstring, operators):
 
     out = function(parsedvals)
     if remainder:
-        out = metaparse(remainder, operators)
+        out = metaparse(remainder, operators)[0]
     return out, remainder
 
 def nocomments(input):
