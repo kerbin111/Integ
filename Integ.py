@@ -355,7 +355,12 @@ def metaparse(inputstring, operators):
     elif op == "~~": #metaparse works directly with the loop operator
         
         while metaparse(arguments[0], operators)[0] == 0:
-            parsedvals.append(metaparse(arguments[1], operators)[0])
+            completed = metaparse(arguments[1], operators)[0]
+            parsedvals.append(completed)
+        try: #If the loop never evaluates, the loop body is defined to return 0
+            completed
+        except NameError:
+            parsedvals.append(0)
     
     else: #everything else ultimately goes through functions
         for i in arguments:
