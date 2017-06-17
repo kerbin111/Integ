@@ -21,7 +21,7 @@ The second declaration method, implicit declaration, occurs when a program tries
 nearest address. For instance, a program evaluating }(5)(7) will not just set aside storage for address 5 and set it equal to 7, but also, if the nearest declared address
 is 3, set aside storage for 4 and set it equal to 0.
 
-To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
+ To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
 as an operator, but as a syntax feature.
 
 Note that addresses cannot be read from unless they have been declared. The @ operator, which is of the form @(x) where x is a dummy argument, provides the maximum
@@ -50,7 +50,7 @@ reference implementation uses the Python random module, which is pseudo-random, 
 The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; otherwise,
 z will be evaluated.
 
-The loop operator is of the form ~xy. While x is 0, y will be evaluated.
+The loop operator is of the form ~xy. While x is 0, y will be evaluated. When the loop concludes, the loop will return the value of the most recent iteration of y. If x is never 0, the loop will return 0. 
 
 All operators must have one constitutent character, with the operands following in parentheses.
 The character used must be distinct from all other operators' characters.
