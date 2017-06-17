@@ -188,7 +188,7 @@ def divide(arguments):
     """Of the form /xy, with x and y in parentheses. Returns, using truncation division, x / y, discarding the remainder."""
     
     if not arguments[1]:
-        c.connection.privmsg(channel, author + ": Cannot divide by zero.")
+        
         sys.exit()
     
     div = abs(arguments[0]) // abs(arguments[1]) #Performs truncation division
@@ -202,7 +202,7 @@ def modulus(arguments):
     """Of the form %xy, with x and y in parentheses. Returns, using truncation division, the remainder of x / y."""
     
     if not arguments[1]:
-        c.connection.privmsg(channel, author + ": Cannot divide by zero.")
+        
         sys.exit()
     return  arguments[0] - arguments[1] * divide([arguments[0], arguments[1]]) #(Thanks to wob_jonas)
 
