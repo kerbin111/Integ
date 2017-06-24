@@ -24,7 +24,7 @@ Note that addresses cannot be read from unless they have been declared. The @ op
 assigned address to help with storage allocation. If no storage has been allocated, @ outputs -1.
 Also note that address numbers must be greater than or equal to 0.
 
-To deallocate storage, use _x. _x will deallocate all storage between the maximum allotted storage address and the address x, so be careful using it. _x returns x.
+ To deallocate storage, use _x. _x will deallocate all storage between the maximum allotted storage address and the address x, so be careful using it. _x returns x.
 For example, if 0, 1, and 2 are allocated addresses, _(1) will deallocate 1 and 2, so that the only valid address will become 0. 
 
 \Decimal integer constants exist in Integ.
@@ -53,7 +53,7 @@ Comments are of the form #x#, where x can be basically anything. Note that comme
 Also note that leaving off the end of a comment at the end of a program is no longer permitted as it was in versions <= 1.1. Comments are removed before code execution and do not nest; as a result,
 they may be positioned anywhere within a program, including within an operator definition.
 
-User-defined operators are defined with the form ::abc::, where a is the number of operands with which the operator will be called minus one, b is an alphabetical character by which the operator will be called,
+User-defined operators are defined with the form : abc :, where a is the number of operands with which the operator will be called minus one, b is an alphabetical character by which the operator will be called,
 and c is the code that will be executed by the operator. There are no parentheses surrounding a, b, and c. The rules surrounding user-defined operators are fairly complex.
 
 Operator definitions are treated similarly to comments; they can be positioned literally anywhere in Integ code as their contents will be noted and removed by the parser before code execution.
@@ -73,13 +73,13 @@ Certain relative addresses have special significance for a user-defined operator
 finishes executing is the value that the operator will return. Integ automatically writes the value 0 to this relative address when the operator is called; to give it a different value, one must simply
 write to it as one would write to a normal location in the body of the operator.
 
-If the user specified a value of a (where ::abc::) other than 0 (which is allowed; in this case, the only expected operand is the offset operand), a additional operands will be expected during an operator call.
+If the user specified a value of a (where : abc :) other than 0 (which is allowed; in this case, the only expected operand is the offset operand), a additional operands will be expected during an operator call.
 The values passed to these operands can be accessed by reading from relative storage addresses 1 - a. For instance, if a = 5, the operator will expect 5 operands that will be automatically
 written to addresses 1 - 5. The first operand in the call (besides the offset operand, which is not written anywhere) will go to 1, the second to 2, and so forth. 
 
-As mentioned, b in ::abc:: is the single alphabetical character by which the operator will be called. At the moment, this means that an Integ program may have a maximum of 52 user-defined operators.
+As mentioned, b in : abc : is the single alphabetical character by which the operator will be called. At the moment, this means that an Integ program may have a maximum of 52 user-defined operators.
 
-c in ::abc:: is the code that will be executed when the operator is called. All of the regular Integ operators are available, but, as noted, addresses are offset to the starting address defined
+c in : abc : is the code that will be executed when the operator is called. All of the regular Integ operators are available, but, as noted, addresses are offset to the starting address defined
 in the offset operator. Relative memory address 0 is reserved for output and relative memory addresses 1 - a are reserved for input. One can do what one wants with all other addresses > a , but one should
 be careful not to overwrite something important on the tape in the process; remember that relative addresses translate to absolute addresses. All user-defined operators (including the one being defined) are
 also available. Recursive calls are possible; however, this reference implementation generates an error if recursion exceeds a certain depth (determined by Python)
