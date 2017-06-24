@@ -1,4 +1,4 @@
-"""2017. By __kerbal__; Unix/MacOS capability by Jimmy Thrasher.
+"""2017. By Joshua Fitzgerald; Unix/MacOS capability by Jimmy Thrasher.
 
 This program is the reference implementation of the Integ language, version 1.1.
 
@@ -21,7 +21,7 @@ The second declaration method, implicit declaration, occurs when a program tries
 nearest address. For instance, a program evaluating }(5)(7) will not just set aside storage for address 5 and set it equal to 7, but also, if the nearest declared address
 is 3, set aside storage for 4 and set it equal to 0.
 
- To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
+To embed anything inside an operator, use (x). For example, }({(1))() will read from location 1 and write 0 at the location at one's contents. (x) is not counted
 as an operator, but as a syntax feature.
 
 Note that addresses cannot be read from unless they have been declared. The @ operator, which is of the form @(x) where x is a dummy argument, provides the maximum
@@ -47,16 +47,53 @@ To obtain a random number between x and y, use `xy, where x and y are the bounds
 of randomness used. Note, then, that the implementation is responsible for providing the actual generator and a seed (if your generator is pseudo-random). This
 reference implementation uses the Python random module, which is pseudo-random, and its default seed generation settings.
 
+The comparison operator is of the form <ab. If a < b, the operator will return 0; otherwise, it will return 1. This property is diametrically opposed to comparison
+behavior in other languages, like C; this is intentional.
+
 The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; otherwise,
 z will be evaluated.
 
-The loop operator is of the form ~xy. While x is 0, y will be evaluated. When the loop concludes, the loop will return the value of the most recent iteration of y. If x is never 0, the loop will return 0. 
+The loop operator is of the form ~xy. While x is 0, y will be evaluated.
 
 All operators must have one constitutent character, with the operands following in parentheses.
 The character used must be distinct from all other operators' characters.
 
-Comments are of the form #.x.#, where x can be basically anything. Comments don't nest; however, if the last part of your program is a comment, you can safely leave
-off the end of the comment so that it becomes #.x; however, you cannot do x.# at the beginning of a program. Comments are removed before parsing.
+Comments are of the form #x#, where x can be basically anything. Note that comments of the form #.x.# (which were valid in versions <= 1.1) are no longer valid.
+Also note that leaving off the end of a comment at the end of a program is no longer permitted as it was in versions <= 1.1. Comments are removed before code execution and do not nest; as a result,
+they may be positioned anywhere within a program, including within an operator definition.
+
+User-defined operators are defined with the form :abc:, where a is the number of operands with which the operator will be called minus one, b is an alphabetical character by which the operator will be called,
+and c is the code that will be executed by the operator. There are no parentheses surrounding a, b, and c. The rules surrounding user-defined operators are fairly complex.
+
+Operator definitions are treated similarly to comments; they can be positioned literally anywhere in Integ code as their contents will be noted and removed by the parser before code execution.
+operator definitions may be positioned before, after, or even during calls to the operators they define; as a result, Integ does not allow the same operator to be defined multiple times.
+Note that because code executed during an interactive shell session is persistent until the session concludes, one must clear the user-defined operators that have already been defined to be able
+to redefine them. To do so, one must use , which is not an operator. , behaves very similarly to $, which can be seen below; , which must be written on its own line in the interactive prompt,
+will remove all of the user-defined operator definitions. Note that , only works in the interactive prompt, not in regular programs.
+
+As mentioned, the first non-whitespace, non-hash character of an operator definition must be a non-negative integer of operands with which the operator will be called minus one. User-defined operators
+must be called with a special operand, the offset operand. As code executed by user-defined operators uses storage, the operator must be provided with an offset, which is basically the first position
+on Integ's array of integers that the operator is allowed to access. For instance, if the operator was called with an offset of 5, the operator would only be able to write and read to the array
+starting with address 5. Note that the offset is used to calculate relative addresses; to a user-defined operator and its definition, storage starts at 0. For instance, an address that would be considered
+address 3 by a user-defined operator called with offset 5 is actually 5 + 3 = absolute address 8. Therefore, if the operator tried to write to address 3, it would actually be writing to absolute address
+8 and can be accessed at address 8 outside of the operator.
+
+Certain relative addresses have special significance for a user-defined operator. Relative address 0 is the output address; the value that it holds when the code in the body of the operator definition
+finishes executing is the value that the operator will return. Integ automatically writes the value 0 to this relative address when the operator is called; to give it a different value, one must simply
+write to it as one would write to a normal location in the body of the operator.
+
+If the user specified a value of a (where :abc:) other than 0 (which is allowed; in this case, the only expected operand is the offset operand), a additional operands will be expected during an operator call.
+The values passed to these operands can be accessed by reading from relative storage addresses 1 - a. For instance, if a = 5, the operator will expect 5 operands that will be automatically
+written to addresses 1 - 5. The first operand in the call (besides the offset operand, which is not written anywhere) will go to 1, the second to 2, and so forth. 
+
+As mentioned, b in :abc: is the single alphabetical character by which the operator will be called. At the moment, this means that an Integ program may have a maximum of 52 user-defined operators.
+
+c in :abc: is the code that will be executed when the operator is called. All of the regular Integ operators are available, but, as noted, addresses are offset to the starting address defined
+in the offset operator. Relative memory address 0 is reserved for output and relative memory addresses 1 - a are reserved for input. One can do what one wants with all other addresses > a , but one should
+be careful not to overwrite something important on the tape in the process; remember that relative addresses translate to absolute addresses. All user-defined operators (including the one being defined) are
+also available. Recursive calls are possible; however, this reference implementation generates an error if recursion exceeds a certain depth (determined by Python)
+because the underlying Python implementation generates an error if recursion exceeds a certain depth. Still, this matter is officially implementation dependent;
+implementations where recursion causes no issues are free to allow as much recursion as they wish.
 
 $ can be used within the interactive prompt only to exit. Also note that $ is not an operator, so you can simply write $.
 """
@@ -100,14 +137,17 @@ class _GetchWindows:
         import msvcrt
         return msvcrt.getche()
 
-
 getch = _Getch()
 
 global numarray #This is the big array that everything reads from.
 numarray = [] #Nothing stored in it yet.
 
+global offset #An offset used for relative addressing
+offset = 0
+
 def write(arguments):
     """The function that corresponds to the { operator. Takes a list; returns the number written"""
+    global offset
     address = int(arguments[0])
     contents = int(arguments[1])
     maxpos = len(numarray) - 1 #The maximum position in the array.
@@ -120,26 +160,28 @@ def write(arguments):
         numarray.append(0)
         maxpos += 1
 
-    numarray[address] = contents #Actually writing the info
+    numarray[address + offset] = contents #Actually writing the info
     return contents
 
 def read(arguments):
     """The function that corresponds to the } operator. Takes a list; returns the number read"""
+    global offset
     address = int(arguments[0]) #We trust that parse did its job and properly provided the arguments.
     maxpos = len(numarray) - 1 #The maximum position in the array.
 
-    if address < 0 or address > maxpos: #We cannot use negative positions.
+    if address < 0 or (address + offset) > maxpos: #We cannot use negative positions.
         print("\nInvalid address " + str(address) + ".")
         sys.exit()
         
-    return numarray[address]
+    return numarray[address + offset]
 
 def dealloc(arguments):
     """The function that corresponds to the _ operator. Takes a list; deallocates all addresses between the maximum address and a specified address and returns the address specified."""
+    global offset
     address = int(arguments[0])
     maxpos = len(numarray) - 1 #The maximum position in the array.
 
-    if address < 0 or address > maxpos: #We cannot use negative positions.
+    if address < 0 or (address + offset) > maxpos: #We cannot use negative positions.
         print("\nInvalid address " + str(address) + ".")
         sys.exit()
         
@@ -148,8 +190,8 @@ def dealloc(arguments):
     return address
     
 def maxa(arguments):
-    """The function that corresponds to the @ operator. Takes a dummy list; returns the maximum assigned storage address."""
-    return len(numarray) - 1
+    """The function that corresponds to the @ operator. Takes a dummy list; returns the maximum assigned storage address relative to the local address."""
+    return len(numarray) - offset - 1
 
 def printer(arguments):
     """The function that corresponds to the ] operator. Takes a list; returns its contents."""
@@ -188,7 +230,7 @@ def divide(arguments):
     """Of the form /xy, with x and y in parentheses. Returns, using truncation division, x / y, discarding the remainder."""
     
     if not arguments[1]:
-        print("\nError: Cannot divide by zero.")
+        c.connection.privmsg(channel, author + ": Cannot divide by zero.")
         sys.exit()
     
     div = abs(arguments[0]) // abs(arguments[1]) #Performs truncation division
@@ -202,7 +244,7 @@ def modulus(arguments):
     """Of the form %xy, with x and y in parentheses. Returns, using truncation division, the remainder of x / y."""
     
     if not arguments[1]:
-        print("\nError: Cannot divide by zero.")
+        c.connection.privmsg(channel, author + ": Cannot divide by zero.")
         sys.exit()
     return  arguments[0] - arguments[1] * divide([arguments[0], arguments[1]]) #(Thanks to wob_jonas)
 
@@ -216,6 +258,18 @@ def randomint(arguments):
     if arguments[0] > arguments[1]:
         return random.randint(arguments[1], arguments[0])
     return random.randint(arguments[0], arguments[1])
+
+def comp(arguments):
+    """The function that corresponds to the < operator. Takes a list (namely, a and b)
+    and returns 0 if a < b and 1 otherwise."""
+
+    a = arguments[0]
+    b = arguments[1]
+
+    if a < b:
+        return 0
+    else:
+        return 1
 
 def conditional(arguments):
     """conditional is a dummy function for ?. metaparse handles conditional execution."""
@@ -259,6 +313,14 @@ def parse(inputstr, opconst):
 
     if inputstr[0] == "$":
         print("\n$ is not an operator; type it by itself in the interactive shell to exit.")
+        sys.exit()
+
+    if inputstr[0] == "," and not sys.stdin.isatty():
+        print("\n, is not an operator; type it by itself in the interactive shell to clear the user-defined operator definitions.")
+        sys.exit()
+
+    if inputstr[0] == "," and sys.stdin.isatty():
+        print("\nClearing user defined operator definitions.")
         sys.exit()
     
     if not operator: #We should have found an operator.
@@ -317,12 +379,13 @@ def parse(inputstr, opconst):
         sys.exit()
     return [operator, args, inputstr[pos:]] #We return the operator, its arguments, and anything left in the string.
 
-def metaparse(inputstring, operators):
+def metaparse(inputstring):
     """metaparse is responsible for making parse helpful. parse separates a string into its components,
        and metaparse is responsible for using parse and figuring out how those components work together.
-       Unlike parse, metaparse takes a dictionary with keys as parse-formatted operator strings and
+       Unlike parse, metaparse takes a global dictionary with keys as parse-formatted operator strings and
        values as functions that metaparse must call. metaparse passes the keys to parse."""
-
+    global opdict
+    
     remainder = ""
     
     if not inputstring: #Returns 0 if the string is empty.
@@ -336,26 +399,27 @@ def metaparse(inputstring, operators):
     except ValueError:
         pass
 
-    output = parse(inputstring, list(operators.keys())) #Get and unpack parse output
+    output = parse(inputstring, list(opdict.keys())) #Get and unpack parse output
+    
     op = output[0]
     arguments = output[1]
     remainder = output[2]
 
-    function = operators[op] #The function to be executed from the operator
+    function = opdict[op] #The function to be executed from the operator
     parsedvals = [] #parsing the arguments
 
     if op == "???": #metaparse directly works with the conditional operator
         
-        if metaparse(arguments[0], operators)[0] == 0:
-            parsedvals.append(metaparse(arguments[1], operators)[0])
+        if metaparse(arguments[0])[0] == 0:
+            parsedvals.append(metaparse(arguments[1])[0])
             
         else:
-            parsedvals.append(metaparse(arguments[2], operators)[0])
+            parsedvals.append(metaparse(arguments[2])[0])
         
     elif op == "~~": #metaparse works directly with the loop operator
         
-        while metaparse(arguments[0], operators)[0] == 0:
-            completed = metaparse(arguments[1], operators)[0]
+        while metaparse(arguments[0])[0] == 0:
+            completed = metaparse(arguments[1])[0]
             parsedvals.append(completed)
         try: #If the loop never evaluates, the loop body is defined to return 0
             completed
@@ -364,42 +428,137 @@ def metaparse(inputstring, operators):
     
     else: #everything else ultimately goes through functions
         for i in arguments:
-            parsedvals.append(metaparse(i, operators)[0])
-
+            parsedvals.append(metaparse(i)[0])
+    
     out = function(parsedvals)
     if remainder:
-        out = metaparse(remainder, operators)[0]
+        out = metaparse(remainder)[0]
+    
     return out, remainder
 
-def nocomments(input):
-    """nocomments removes comments, which are of the form #.<comment_text>.# and which do not nest.
+def nocomments(inputstr):
+    """nocomments removes comments, which are of the form #<comment_text># and which do not nest.
        You don't have to put a comment end signifier if you want the last bit of the program to be a comment."""
     incomment = False
     lastchar = None
     output = ""
-    for i in input: #Basically, just add characters to the output if they aren't in comments in the input.
-        if i == "." and lastchar == "#" and incomment == False:
-            incomment = True
-        if i == "#" and lastchar == "." and incomment == True:
-            incomment = False
+    for i in inputstr: #Basically, just add characters to the output if they aren't in comments in the input.
+        if i == "#":
+            incomment = not incomment
                     
-        if not incomment and i != "#" and i != ".":
+        if not incomment and i != "#":
           output += i
 
         lastchar = i
-    
+
+    if incomment:
+        print("Comment not terminated with closing #")
+        sys.exit()
+
     return output
+
+def find_func(inputstr):
+    """find_func finds user function definitions in Integ code, parses and saves them to memory (not storage),
+    and deletes the definition so that metaparse can use it."""
+    global opdict
+    
+    indef = False
+
+    inopnum = True
+
+    opchar = None
+
+    functbody = ""
+
+    output = ""
+
+    opnum = -1
+
+    #A user-defined function executed during metaparse
+    
+    
+    for i in inputstr:
+        if i == ":": #We try to find the bounds of a definition
+            indef = not indef
+
+            if not indef:
+                #What follows is some slightly confusing programming used to create a user-defined operator function and add it to the opdict
+
+                if not opchar:
+                    print("\nThe first non-digital, non-whitespace character of an operator definition must be a single alphabetical operator designator character.")
+                    sys.exit()
+                
+                exec("def " + opchar + """function(arguments):
+                    global offset
+                    offset = arguments[0]
+                    args = arguments[1:]
+                    metaparse(\"}()()\")
+                    count = 1
+                    while count <= len(args):
+                        metaparse(\"}(\" + str(count) + \")(\" + str(args[count - 1]) + \")\")
+                        count += 1
+                    metaparse(\"""" + functbody.replace("\"", "\\\"") + """\")
+                    results = metaparse(\"{()\")[0]
+                    offset = 0
+                    return (results)""")
+                    
+                exec("opdict[opchar*(opnum + 1)] = " + opchar + "function")
+
+            continue
+
+        if not indef and i != ":":
+          output += i
+
+        if indef:
+            if inopnum:
+                if opnum == -1:
+                    try:
+                        opnum = int(i)
+                    except ValueError:
+                        print("\nValid number of operands not provided.")
+                        sys.exit()
+                else:
+                    try:
+                        opnum = opnum * 10 + int(i) #We collect the ints
+                    except ValueError:
+                        if opnum < 0:
+                            print("\nOperators must have a nonnegative number of arguments, including the mandatory memory allocation argument.")
+                            sys.exit()
+                        inopnum = False 
+                        if i.isalpha(): #We try to get the operator character, which must be a single alphabetical character
+                            opconst0 = "" #Gets first characters of operators
+                            for j in opdict.keys():
+                                opconst0 += j[0]
+                            if i in opconst0:
+                                print("\nMultiple conflicting operator definitions provided.")
+                                sys.exit()
+                            opchar = i
+                        else:
+                            print("\nThe first non-digital character of an operator definition must be a single alphabetical operator designator character.")
+                            sys.exit()
+
+            else:
+                if i != ":":
+                    functbody += i 
+
+    if indef:
+        print("Operator definition not terminated with closing :")
+        sys.exit()
+    return output
+            
 
 #The main body of the interpreter--almost like a metametaparse function
 
 string = "" #The actual program is stored here
+global opdict
 opdict = {"}}" : write, "{" : read, "_" : dealloc, "@" : maxa, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
-          "**" : multiply, "//" : divide, "%%" : modulus, "\"" : inttime, "``" : randomint, "???" : conditional, "~~" : loop}
+          "**" : multiply, "//" : divide, "%%" : modulus, "\"" : inttime, "``" : randomint, "<<" : comp, "???" : conditional, "~~" : loop}
                                              #These are the operators currently supported by Integ. The number
                                              #of times that the character is repeated is the number of operands
                                              #that the operator requires. Each operator (except for the conditional and loop operators)
                                              #maps to a function that
                                              #performs its task.
+
 
 if (sys.stdin.isatty()):
     print("""
@@ -408,13 +567,21 @@ if (sys.stdin.isatty()):
     while True: #interactive interpreter
         
         print("\n")
-        string = input(">>> ")
+        
+        string = input(">>> ").replace(" ", "").replace("\n", "").replace("\t", "")
         if string == "$":
             break
+        if string == ",":
+            keys = opdict.copy().keys()
+            for i in keys:
+                if i.isalpha():
+                    opdict.pop(i) #Basically, this gets rid of user-defined operators
         try:
-            metaparse(nocomments(string), opdict)
+            metaparse(find_func(nocomments(string)))
         except SystemExit:
             pass #We don't want to exit when there's an error.
+        except RecursionError:
+            print("\nImplementation-Specific Error: Recursion limit exceeded.")
         except KeyboardInterrupt:
             print("\nKeyboard Interrupt.")
             continue
@@ -425,8 +592,10 @@ else:
         except EOFError:
             break
     try:    
-        metaparse(nocomments(string), opdict)
+        metaparse(find_func(nocomments(string.replace(" ", "").replace("\n", "").replace("\t", ""))))
         
     except KeyboardInterrupt:
             print("\nKeyboard Interrupt.")
+    except RecursionError:
+            print("\nImplementation-Specific Error: Recursion limit exceeded.")
             
