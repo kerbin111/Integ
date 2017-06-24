@@ -156,7 +156,7 @@ def write(arguments):
         print("\nCannot assign negative addresses.")
         sys.exit()
     
-    while maxpos < address: #Declaring the storage we need, implicitly and explicitly
+    while maxpos < address + offset: #Declaring the storage we need, implicitly and explicitly
         numarray.append(0)
         maxpos += 1
 
@@ -191,6 +191,7 @@ def dealloc(arguments):
     
 def maxa(arguments):
     """The function that corresponds to the @ operator. Takes a dummy list; returns the maximum assigned storage address relative to the local address."""
+    global offset
     return len(numarray) - offset - 1
 
 def printer(arguments):
@@ -491,6 +492,7 @@ def find_func(inputstr):
                 exec("def " + opchar + """function(arguments):
                     global offset
                     offset = arguments[0]
+                    
                     args = arguments[1:]
                     metaparse(\"}()()\")
                     count = 1
