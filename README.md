@@ -1,10 +1,10 @@
 
 # Integ
 
-### Version 1.1
+### Version 1.2
 
-*"So many parentheses everywhere"
-            -wob_jonas*
+*"An esoteric programming language composed of nothing but parentheses"
+            -rdococ*
 
 Note: You need Python 3 to run the Integ interpreter.
 
@@ -41,6 +41,8 @@ To obtain a random number between x and y, use \`xy, where x and y are the bound
 of randomness used. Note, then, that the implementation is responsible for providing the actual generator and a seed (if your generator is pseudo-random). This
 reference implementation uses the Python random module, which is pseudo-random, and its default seed generation settings.
 
+The comparison operator is of the form <ab. If a < b, the operator will return 0; otherwise, it will return 1. This property is diametrically opposed to comparison behavior in other languages, like C; this is intentional.
+
 The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; otherwise,
 z will be evaluated. For instance, ? (-(\[())(97)) (](97)) () prints "a" if it receives "a", and does not print anything if it receives another character.
 
@@ -48,7 +50,42 @@ The loop operator is of the form \~xy. While x is 0, y will be evaluated. If x i
 
 Tabs, spaces, and newlines are ignored; as a result, you can design your code in almost any shape.
 
-Comments are of the form #.x.#, where x can be basically anything. Comments don't nest; however, if the last part of your program is a comment, you can safely leave off the end of the comment so that it becomes #.x; however, you cannot write x.# at the beginning of a program. Comments are removed before parsing.
+Comments are of the form #x#, where x can be basically anything. Note that comments of the form #.x.# (which were valid in versions <= 1.1) are no longer valid.
+Also note that leaving off the end of a comment at the end of a program is no longer permitted as it was in versions <= 1.1. Comments are removed before code execution and do not nest; as a result,
+they may be positioned anywhere within a program, including within an operator definition.
+
+User-defined operators are defined with the form :abc:, where a is the number of operands with which the operator will be called minus one, b is an alphabetical character by which the operator will be called,
+and c is the code that will be executed by the operator. There are no parentheses surrounding a, b, and c. The rules surrounding user-defined operators are fairly complex.
+
+Operator definitions are treated similarly to comments; they can be positioned literally anywhere in Integ code as their contents will be noted and removed by the parser before code execution.
+operator definitions may be positioned before, after, or even during calls to the operators they define; as a result, Integ does not allow the same operator to be defined multiple times.
+Note that because code executed during an interactive shell session is persistent until the session concludes, one must clear the user-defined operators that have already been defined to be able
+to redefine them. To do so, one must use , which is not an operator. , behaves very similarly to $, which can be seen below; , which must be written on its own line in the interactive prompt,
+will remove all of the user-defined operator definitions. Note that , only works in the interactive prompt, not in regular programs.
+
+As mentioned, the first non-whitespace, non-hash character of an operator definition must be a non-negative integer of operands with which the operator will be called minus one. User-defined operators
+must be called with a special operand, the offset operand. As code executed by user-defined operators uses storage, the operator must be provided with an offset, which is basically the first position
+on Integ's array of integers that the operator is allowed to access. For instance, if the operator was called with an offset of 5, the operator would only be able to write and read to the array
+starting with address 5. Note that the offset is used to calculate relative addresses; to a user-defined operator and its definition, storage starts at 0. For instance, an address that would be considered
+address 3 by a user-defined operator called with offset 5 is actually 5 + 3 = absolute address 8. Therefore, if the operator tried to write to address 3, it would actually be writing to absolute address
+8 and can be accessed at address 8 outside of the operator.
+
+Certain relative addresses have special significance for a user-defined operator. Relative address 0 is the output address; the value that it holds when the code in the body of the operator definition
+finishes executing is the value that the operator will return. Integ automatically writes the value 0 to this relative address when the operator is called; to give it a different value, one must simply
+write to it as one would write to a normal location in the body of the operator.
+
+If the user specified a value of a (where :abc:) other than 0 (which is allowed; in this case, the only expected operand is the offset operand), a additional operands will be expected during an operator call.
+The values passed to these operands can be accessed by reading from relative storage addresses 1 - a. For instance, if a = 5, the operator will expect 5 operands that will be automatically
+written to addresses 1 - 5. The first operand in the call (besides the offset operand, which is not written anywhere) will go to 1, the second to 2, and so forth. 
+
+As mentioned, b in :abc: is the single alphabetical character by which the operator will be called. At the moment, this means that an Integ program may have a maximum of 52 user-defined operators.
+
+c in :abc: is the code that will be executed when the operator is called. All of the regular Integ operators are available, but, as noted, addresses are offset to the starting address defined
+in the offset operator. Relative memory address 0 is reserved for output and relative memory addresses 1 - a are reserved for input. One can do what one wants with all other addresses > a , but one should
+be careful not to overwrite something important on the tape in the process; remember that relative addresses translate to absolute addresses. All user-defined operators (including the one being defined) are
+also available. Recursive calls are possible; however, this reference implementation generates an error if recursion exceeds a certain depth (determined by Python)
+because the underlying Python implementation generates an error if recursion exceeds a certain depth. Still, this matter is officially implementation dependent;
+implementations where recursion causes no issues are free to allow as much recursion as they wish.
 
 $ can be used within the interactive prompt only to exit. Also note that $ is not an operator, so you can simply write $.
 
