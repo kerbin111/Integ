@@ -1,0 +1,3 @@
+#See http://esolangs.org/wiki/Truth-machine for an explanation of this program.#
+
+}()([())?(-(48)({()))(](48))(?(-(49)({()))(~()(](49)))())
