@@ -99,3 +99,5 @@ numiter.int: Prints numbers 0-9 forwards and backwards endlessly.
 quine.int: A quine by wob_jonas from the #esoteric IRC community.
 
 say_a.int: Wants you to press "a" over and over and over. This program does not work in the Python IDLE; try a command prompt instead.
+
+Truth_machine.int: A truth machine that outputs 0 and quits if it receives a 0 as input and outputs 1's in an infinite loop if it receives a 1 as input. See http://esolangs.org/wiki/Truth-machine.
