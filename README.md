@@ -51,7 +51,7 @@ The loop operator is of the form \~xy. While x is 0, y will be evaluated. If x i
 
 Tabs, spaces, and newlines are ignored; as a result, you can design your code in almost any shape.
 
-Comments are of the form #x#, where x can be basically anything. Note that comments of the form #.x.# (which were valid in versions <= 1.1) are no longer valid.
+Comments are of the form #x#, where x can be basically anything. Note that comments of the form #.x.# (which were valid in versions <= 1.1) will work but are not recommended.
 Also note that leaving off the end of a comment at the end of a program is no longer permitted as it was in versions <= 1.1. Comments are removed before code execution and do not nest; as a result,
 they may be positioned anywhere within a program, including within an operator definition.
 
