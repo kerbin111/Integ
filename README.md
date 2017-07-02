@@ -1,7 +1,9 @@
 
 # Integ
 
-### Version 1.2
+![Integ Logo](https://github.com/kerbin111/Integ/blob/master/Integ-Logo1.jpeg)
+
+### Version 1.3
 
 *"An esoteric programming language composed of nothing but parentheses"
             -rdococ*
@@ -87,6 +89,23 @@ be careful not to overwrite something important on the tape in the process; reme
 also available. Recursive calls are possible; however, this reference implementation generates an error if recursion exceeds a certain depth (determined by Python)
 because the underlying Python implementation generates an error if recursion exceeds a certain depth. Still, this matter is officially implementation dependent;
 implementations where recursion causes no issues are free to allow as much recursion as they wish.
+
+OpPacks (other Integ programs) are imported using the syntax .x. where x is the identification number of the OpPack not surrounded by parentheses. OpPacks are executed and removed (like a comment and an operator definition)
+before the program importing the OpPack; as a result, OpPack imports may be placed almost anywhere within a program. Imports do not return a value; however, the OpPack will be executed similarly to a
+regular program, so OpPacks can print to output and import other OpPacks. Most usefully, user-defined operators in an OpPack can be used by the importing program, hence the name OpPack.
+User-defined operators from OpPacks have the same properties and calling behavior as User-defined operators from the importing program. I recommend (but will not force) OpPack creators to
+use uppercase letters for operator characters so that importing programs can at least use the lowercase letters.
+
+The standard library has identification number 0.
+
+To import an OpPack, the Integ interpreter connects to a GitHub repository (called Integ_OpPacks) and finds the file with the name corresponding to the OpPack's identification number.
+The file contains a URL to the OpPack's actual location online. Integ retrieves the file at the URL and executes it. Therefore, the following statements are true:
+
+-You must have an internet connection to use OpPacks.
+
+-OpPacks must be retrieved through the Internet, even if you created the OpPack.
+
+Right now, Integbot in the #esoteric-blah freenode IRC channel allows users to add OpPacks to the GitHub and to get info on individual OpPacks.
 
 $ can be used within the interactive prompt only to exit. Also note that $ is not an operator, so you can simply write $.
 
