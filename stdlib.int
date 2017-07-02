@@ -1,0 +1,19 @@
+#The logical negation operator. Of the form Nxy where x is the offset operand and y is the argument to which the logical negation will be applied.
+Logical negation returns 1 if y is 0, and 0 otherwise.
+#
+
+:1N?({(1))(}()(1))(}()()):
+
+#The absolute value operator. Of the form Axy where x is the offset operand and y is the argument whose absolute value will be found.
+#
+
+:1A?(<({(1))())(}()(*(-1)({(1))))(}()({(1))):
+
+#The string input operator. This library considers a group of contiguous cells with a position counter at relative address 0 (relative to the start of the string) and null-termination
+a string. Of the form Ix where x is the beginning of the string; to be precise, the position of the position counter.
+#
+:0I~(?(-(}(+(1)({()))([()))(13))(1)(0))(}()(+(1)({())))}(+(1)({()))():
+
+#The string print operator. See above for the definition of a string in this library. Of the form Px where x is the beginning of the string.
+#
+:0P}()(1)~(?(]({({())))(1)())(}()(+(1)({())))}()():
