@@ -1,6 +1,6 @@
-"""2017. By Joshua Fitzgerald; Unix/MacOS capability by Jimmy Thrasher.
+"""2017. By __kerbal__; Unix/MacOS capability by jjthrash.
 
-This program is the reference implementation of the Integ language, version 1.1.
+This program is the reference implementation of the Integ language, version 1.3.
 
 In Integ, the only datatype is the integer. The variables have consecutive addresses in Integ (they may or may not be consecutive in memory) and do not get distinct names. Instead,
 they are accessed with the notation {x and written to with the notation }xy where x is the address number and y is the new integer. y is optional;
@@ -95,10 +95,39 @@ also available. Recursive calls are possible; however, this reference implementa
 because the underlying Python implementation generates an error if recursion exceeds a certain depth. Still, this matter is officially implementation dependent;
 implementations where recursion causes no issues are free to allow as much recursion as they wish.
 
+OpPacks (other Integ programs) are imported using the syntax .x. where x is the identification number of the OpPack not surrounded by parentheses. OpPacks are executed and removed (like a comment and an operator definition)
+before the program importing the OpPack; as a result, OpPack imports may be placed almost anywhere within a program. Imports do not return a value; however, the OpPack will be executed similarly to a
+regular program, so OpPacks can print to output and import other OpPacks. Most usefully, user-defined operators in an OpPack can be used by the importing program, hence the name OpPack.
+User-defined operators from OpPacks have the same properties and calling behavior as User-defined operators from the importing program. I recommend (but will not force) OpPack creators to
+use uppercase letters for operator characters so that importing programs can at least use the lowercase letters.
+
+The standard library has identification number 0.
+
+To import an OpPack, the Integ interpreter connects to a GitHub repository (called Integ_OpPacks) and finds the file with the name corresponding to the OpPack's identification number.
+The file contains a URL to the OpPack's actual location online. Integ retrieves the file at the URL and executes it. Therefore, the following statements are true:
+
+-You must have an internet connection to use OpPacks.
+
+-OpPacks must be retrieved through the Internet, even if you created the OpPack.
+
+Right now, Integbot in the #esoteric-blah freenode IRC channel allows users to add OpPacks to the GitHub and to get info on individual OpPacks.
+
+Overcomments (Comments, Operator definitions, and OpPack imports) are evaluated and removed in this order:
+
+Comments
+OpPack imports
+Operator definitions
+
 $ can be used within the interactive prompt only to exit. Also note that $ is not an operator, so you can simply write $.
 """
 
 import sys, time, random
+import github
+import math
+from github import Github
+from urllib import request
+import base64
+import codecs
 
 # from http://code.activestate.com/recipes/134892/
 class _Getch:
@@ -506,6 +535,12 @@ def find_func(inputstr):
                     
                 exec("opdict[opchar*(opnum + 1)] = " + opchar + "function")
 
+                functbody = ""
+                opnum = -1
+                indef = False
+                inopnum = True
+                opchar = None
+
             continue
 
         if not indef and i != ":":
@@ -532,7 +567,7 @@ def find_func(inputstr):
                             for j in opdict.keys():
                                 opconst0 += j[0]
                             if i in opconst0:
-                                print("\nMultiple conflicting operator definitions provided.")
+                                print("\nMultiple conflicting operator definitions provided. New definition not used.")
                                 sys.exit()
                             opchar = i
                         else:
@@ -549,9 +584,84 @@ def find_func(inputstr):
     return output
             
 
+def find_pack(inputstr):
+    """find_pack finds OpPack imports in Integ code, executes the corresponding file,
+    and deletes the definition so that metaparse can use it."""
+
+    global oppacks
+    
+    inimport = False
+
+    output = ""
+    importbody = ""
+    
+    for i in inputstr: #Basically, just add characters to the output if they aren't in definitions in the input.
+        if i == ".":
+            inimport = not inimport
+
+            if not inimport:
+                
+                try:
+                    importnum = int(importbody) #We get the integer that refers to the OpPack
+                except ValueError:
+                    print("OpPack imports only contain a single, non-negative integer. This integer identifies the OpPack to be imported.")
+                    sys.exit()
+                    
+                if importnum < 0:
+                    print("OpPack imports only contain a single, non-negative integer. This integer identifies the OpPack to be imported.")
+                    sys.exit()
+
+                try: #Trying to get the URL of the OpPack; you have to decode it
+                    pack = codecs.decode(base64.b64decode(oppacks.get_file_contents(str(importnum)).content))
+                except:
+                    print("OpPack " + str(importnum) + " may not exist, or there may be connection errors. Opening failed.")
+                    sys.exit()
+
+                try: #Trying to get the OpPack
+                    file = request.urlopen(pack)
+                except:
+                    print("OpPack " + str(importnum) + " could not be opened.")
+                    sys.exit()
+
+                script = codecs.decode(file.read())
+                
+                execute(script.replace(" ", "").replace("\n", "").replace("\t", "").replace("\r", ""))
+                
+                file.close()
+                
+                importbody = ""
+
+                
+
+        if inimport and i != ".":
+            importbody += i
+                    
+        if not inimport and i != ".":
+          output += i
+
+    if inimport:
+        c.connection.privmsg(channel, author + ": Import not terminated with closing .")
+        sys.exit()
+
+    return output
+
+
 #The main body of the interpreter--almost like a metametaparse function
 
-string = "" #The actual program is stored here
+githubac = Github()
+
+global oppacks
+oppacks = None
+
+useops = True
+
+try:
+    oppacks = githubac.get_repo("kerbin111/Integ_OpPacks")
+except:
+    print("Couldn't access the Github repo. Integ will ignore any OpPack imports.")
+    useops = False
+
+
 global opdict
 opdict = {"}}" : write, "{" : read, "_" : dealloc, "@" : maxa, "]" : printer, "[" : inputer, "++" : add, "--" : subtract,
           "**" : multiply, "//" : divide, "%%" : modulus, "\"" : inttime, "``" : randomint, "<<" : comp, "???" : conditional, "~~" : loop}
@@ -561,43 +671,77 @@ opdict = {"}}" : write, "{" : read, "_" : dealloc, "@" : maxa, "]" : printer, "[
                                              #maps to a function that
                                              #performs its task.
 
-
-if (sys.stdin.isatty()):
-    print("""
---------Integ 1.1---------
- Interactive  Interpreter""")
-    while True: #interactive interpreter
+def execute(string1 = None):
+    
+    if string1:
         
-        print("\n")
-        
-        string = input(">>> ").replace(" ", "").replace("\n", "").replace("\t", "")
-        if string == "$":
-            break
-        if string == ",":
-            keys = opdict.copy().keys()
-            for i in keys:
-                if i.isalpha():
-                    opdict.pop(i) #Basically, this gets rid of user-defined operators
         try:
-            metaparse(find_func(nocomments(string)))
-        except SystemExit:
-            pass #We don't want to exit when there's an error.
-        except RecursionError:
-            print("\nImplementation-Specific Error: Recursion limit exceeded.")
-        except KeyboardInterrupt:
-            print("\nKeyboard Interrupt.")
-            continue
-else:
-    while True: #collecting input for redirection-type input
-        try:
-            string += input()
-        except EOFError:
-            break
-    try:    
-        metaparse(find_func(nocomments(string.replace(" ", "").replace("\n", "").replace("\t", ""))))
-        
-    except KeyboardInterrupt:
-            print("\nKeyboard Interrupt.")
-    except RecursionError:
-            print("\nImplementation-Specific Error: Recursion limit exceeded.")
+            partial = nocomments(string1.replace(" ", "").replace("\n", "").replace("\t", ""))
             
+            if useops:
+                metaparse(find_func(find_pack(partial)))
+            else:
+                metaparse(find_func(partial))
+            
+        except KeyboardInterrupt:
+                print("\nKeyboard Interrupt.")
+        except RecursionError:
+                print("\nImplementation-Specific Error: Recursion limit exceeded.")
+        except SystemExit:
+            if sys.stdin.isatty():
+                pass
+            else:
+                sys.exit()
+
+        return
+
+    string = "" #The actual program is stored here
+    
+    if (sys.stdin.isatty()):
+        print("""
+    --------Integ 1.3---------
+     Interactive  Interpreter""")
+        while True: #interactive interpreter
+            
+            print("\n")
+            
+            string = input(">>> ").replace(" ", "").replace("\n", "").replace("\t", "")
+            if string == "$":
+                break
+            if string == ",":
+                keys = opdict.copy().keys()
+                for i in keys:
+                    if i.isalpha():
+                        opdict.pop(i) #Basically, this gets rid of user-defined operators
+            try:
+                partial = nocomments(string.replace(" ", "").replace("\n", "").replace("\t", ""))
+                if useops:
+                    metaparse(find_func(find_pack(partial)))
+                else:
+                    metaparse(find_func(partial))
+            except SystemExit:
+                pass #We don't want to exit when there's an error.
+            except RecursionError:
+                print("\nImplementation-Specific Error: Recursion limit exceeded.")
+            except KeyboardInterrupt:
+                print("\nKeyboard Interrupt.")
+                continue
+    else:
+        while True: #collecting input for redirection-type input
+            try:
+                string += input()
+            except EOFError:
+                break
+        try:
+            partial = nocomments(string.replace(" ", "").replace("\n", "").replace("\t", ""))
+            if useops:
+                metaparse(find_func(find_pack(partial)))
+            else:
+                metaparse(find_func(partial))
+            
+        except KeyboardInterrupt:
+                print("\nKeyboard Interrupt.")
+        except RecursionError:
+                print("\nImplementation-Specific Error: Recursion limit exceeded.")
+            
+execute()
