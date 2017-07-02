@@ -38,6 +38,7 @@ To output the current time in seconds since the beginning of the epoch, use "x, 
 
 To obtain a random number between x and y, use \`xy, where x and y are the bounds for the random number. x and y do not have to be in any particular order;
 \`(0)(10) and \`(10)(0) both work. Note that random number generation is intentionally implementation dependent; that way, the implementation determines the level
+
 of randomness used. Note, then, that the implementation is responsible for providing the actual generator and a seed (if your generator is pseudo-random). This
 reference implementation uses the Python random module, which is pseudo-random, and its default seed generation settings.
 
@@ -46,6 +47,7 @@ The conditional operator is of the form ?xyz. If x is 0, y will be evaluated; ot
 z will be evaluated. For instance, ? (-(\[())(97)) (](97)) () prints "a" if it receives "a", and does not print anything if it receives another character.
 
 The loop operator is of the form \~xy. While x is 0, y will be evaluated. If x is never 0, then the loop will simply return 0. For instance, }()()\~(0)(](}()(+({())(1)))](32)) will print the characters (or try to print the characters) with codes 0, 1, 2, 3, 4, 5... and so forth for infinity, or until the application is exited.
+
 
 Tabs, spaces, and newlines are ignored; as a result, you can design your code in almost any shape.
 
@@ -101,3 +103,5 @@ quine.int: A quine by wob_jonas from the #esoteric IRC community.
 say_a.int: Wants you to press "a" over and over and over. This program does not work in the Python IDLE; try a command prompt instead.
 
 Truth_machine.int: A truth machine that outputs 0 and quits if it receives a 0 as input and outputs 1's in an infinite loop if it receives a 1 as input. See http://esolangs.org/wiki/Truth-machine.
+
+stdlib.int: Not an example; it is the Integ standard library. Import with .0.
