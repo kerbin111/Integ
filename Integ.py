@@ -96,7 +96,7 @@ because the underlying Python implementation generates an error if recursion exc
 implementations where recursion causes no issues are free to allow as much recursion as they wish.
 
 OpPacks (other Integ programs) are imported using the syntax .x. where x is the identification number of the OpPack not surrounded by parentheses. OpPacks are executed and removed (like a comment and an operator definition)
-before the program importing the OpPack; as a result, OpPack imports may be placed almost anywhere within a program. Imports do not return a value; however, the OpPack will be executed similarly to a
+before the program importing the OpPack is executed; as a result, OpPack imports may be placed almost anywhere within a program. Imports do not return a value; however, the OpPack will be executed similarly to a
 regular program, so OpPacks can print to output and import other OpPacks. Most usefully, user-defined operators in an OpPack can be used by the importing program, hence the name OpPack.
 User-defined operators from OpPacks have the same properties and calling behavior as User-defined operators from the importing program. I recommend (but will not force) OpPack creators to
 use uppercase letters for operator characters so that importing programs can at least use the lowercase letters.
