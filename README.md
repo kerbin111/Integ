@@ -98,7 +98,7 @@ use uppercase letters for operator characters so that importing programs can at 
 
 The standard library has identification number 0.
 
-To import an OpPack, the Integ interpreter connects to a GitHub repository (called Integ_OpPacks) and finds the file with the name corresponding to the OpPack's identification number.
+To import an OpPack, the Integ interpreter connects to a GitHub repository (at https://github.com/kerbin111/Integ_OpPacks) and finds the file with the name corresponding to the OpPack's identification number.
 The file contains a URL to the OpPack's actual location online. Integ retrieves the file at the URL and executes it. Therefore, the following statements are true:
 
 -You must have an internet connection to use OpPacks.
